@@ -153,7 +153,6 @@ export default class Link {
             this.nodes.previewer.setAttribute('src', data.link);
         }
         this.data = Object.assign({}, this.data, data);
-        console.log(this.data);
     }
 
     /**
