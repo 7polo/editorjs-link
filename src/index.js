@@ -38,6 +38,7 @@ export default class Link {
             meta: {}
         };
 
+        console.log(data)
         this.data = data;
     }
 
@@ -120,7 +121,7 @@ export default class Link {
         holder.appendChild(this.nodes.previewer);
 
         if (this.data.meta.height) {
-            holder.style.height = this.data.meta.height;
+            holder.style.height = this.data.meta.height + 'px';
         }
 
         if (!this.readOnly) {
