@@ -5,7 +5,7 @@ export default class ResizeDrag {
     constructor(el, api, {onStartDrag, onEndDrag, onDrag}) {
         this.el = el;
         this.api = api;
-        this.resize = throttle(100, this.resize, {noLeading: false, noTrailing: false});
+        this.updateHeight = throttle(100, this.updateHeight, {noLeading: false, noTrailing: false});
         this.callback = {onStartDrag, onEndDrag, onDrag};
         this.isDownBottom = false;
         this.mouseStartPos = {};
@@ -44,17 +44,21 @@ export default class ResizeDrag {
                 return;
             }
             const offset = parseInt((e.clientY - this.mouseStartPos.y) * 1.2);
-            this.resize(offset + oph);
+           this.doResize(offset + oph);
         });
     }
 
-    resize(height) {
-        if (height < 60) {
+    doResize(height) {
+        if (height <= 300) {
             return;
         }
-        this.el.style.height = height + 'px';
         if (this.callback.onDrag) {
             this.callback.onDrag({meta: {height}});
         }
+        this.updateHeight(height);
+    }
+
+    updateHeight(height) {
+        this.el.style.height = height + 'px';
     }
 }

@@ -1,6 +1,6 @@
 import './index.less';
 import ResizeDrag from './resize-drag';
-import {debounce} from 'throttle-debounce';
+import {debounce, throttle} from 'throttle-debounce';
 
 export default class Link {
 
@@ -76,7 +76,7 @@ export default class Link {
 
     makeInputHolder() {
         const inputHolder = this.make('div', 'link-tool__input-holder');
-        this.nodes.input = this.make('div', [this.api.styles.input, 'link-tool__input'], {
+        this.nodes.input = this.make('div', [ this.api.styles.input, 'link-tool__input'], {
             contentEditable: !this.readOnly
         });
         this.nodes.input.textContent = this.data.link;
@@ -98,10 +98,11 @@ export default class Link {
                 }
             });
         }
-        inputHolder.appendChild(this.nodes.input);
+        if (!this.readOnly) {
+            inputHolder.appendChild(this.nodes.input);
+        }
         return inputHolder;
     }
-
 
     /**
      * Prepare link preview holder
@@ -113,26 +114,28 @@ export default class Link {
         holder.dataset.mutationFree = true;
 
         this.nodes.previewer = this.make('iframe', 'third-party-iframe', {
-            frameborder: 0,
             sandbox: 'allow-forms allow-orientation-lock allow-presentation ' +
                 'allow-same-origin allow-scripts allow-popups allow-downloads'
         });
-        const gutter = this.make('div', ['link-tool__gutter', 'gutter', 'gutter-bottom']);
         holder.appendChild(this.nodes.previewer);
-        holder.appendChild(gutter);
 
         if (this.data.meta.height) {
             holder.style.height = this.data.meta.height;
         }
-        new ResizeDrag(holder, this.api, {
-            onStartDrag: () => {
-                this.nodes.container.classList.add('dragging');
-            },
-            onEndDrag: () => {
-                this.nodes.container.classList.remove('dragging');
-            },
-            onDrag: debounce(1000, false, (data) => this.freshPreview(data)),
-        });
+
+        if (!this.readOnly) {
+            const gutter = this.make('div', ['link-tool__gutter', 'gutter', 'gutter-bottom']);
+            holder.appendChild(gutter);
+            new ResizeDrag(holder, this.api, {
+                onStartDrag: () => {
+                    this.nodes.container.classList.add('dragging');
+                },
+                onEndDrag: () => {
+                    this.nodes.container.classList.remove('dragging');
+                },
+                onDrag: throttle(1000, (data) => this.freshPreview(data), {noLeading: false, noTrailing: false}),
+            });
+        }
         return holder;
     }
 
@@ -146,11 +149,11 @@ export default class Link {
     }
 
     freshPreview(data) {
-        console.log(data);
         if (data.link) {
             this.nodes.previewer.setAttribute('src', data.link);
         }
-        this.data = Object.assign(this.data, data);
+        this.data = Object.assign({}, this.data, data);
+        console.log(this.data);
     }
 
     /**
