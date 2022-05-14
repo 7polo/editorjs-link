@@ -37,8 +37,6 @@ export default class Link {
             link: '',
             meta: {}
         };
-
-        console.log(data)
         this.data = data;
     }
 
